@@ -125,6 +125,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   }
 
   Future<void> _submitRequest() async {
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select at least one image.')),
+      );
+      return;
+    }
+
     setState(() {
       _submitLoading = true;
     });
