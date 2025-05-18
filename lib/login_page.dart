@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:my_clean_city_app/components/my_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
-// Fix import paths - ensure these paths are correct relative to your project structure
 import 'package:my_clean_city_app/forgotpassword_page.dart';
-import 'package:my_clean_city_app/register.dart'; // Note: Using the actual file name with "Regester" spelling
+import 'package:my_clean_city_app/register.dart';
+import 'package:google_sign_in/google_sign_in.dart'; // Import Google Sign-In
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -23,6 +24,9 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Google Sign-In instance
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Sign user in method
   void signUserIn() async {
@@ -78,6 +82,41 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Google Sign-In method
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to sign in with Google. Please try again.';
+      });
+      print("Google Sign-In error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   // Toggle between login and register
   void togglePages() {
     if (widget.onTap != null) {
@@ -120,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 50.0),
+                SizedBox(height: 50.h),
 
                 // Logo
                 Container(
@@ -132,32 +171,35 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: Icon(
                     Icons.recycling,
-                    size: 60,
+                    size: 60.sp,
                     color: Color(0xFF4CAF50),
                   ),
                 ),
 
-                const SizedBox(height: 25.0),
+                SizedBox(height: 25.h),
 
                 // App name
                 Text(
                   'MyCleanCity',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF388E3C),
                   ),
                 ),
 
-                const SizedBox(height: 10.0),
+                SizedBox(height: 10.h),
 
                 // Welcome back message
                 Text(
                   'Welcome back, help keep our city clean!',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[700],
+                    fontSize: 16.sp,
+                  ),
                 ),
 
-                const SizedBox(height: 25.0),
+                SizedBox(height: 25.h),
 
                 // Error message if any
                 if (_errorMessage != null)
@@ -171,13 +213,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(color: Colors.red[900]),
+                        style: GoogleFonts.poppins(color: Colors.red[900]),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   ),
 
-                if (_errorMessage != null) const SizedBox(height: 20.0),
+                if (_errorMessage != null) SizedBox(height: 20.sp),
 
                 // Email textfield
                 MyTextField(
@@ -187,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
                   prefixIcon: Icons.email,
                 ),
 
-                SizedBox(height: 10),
+                SizedBox(height: 10.h),
 
                 // Password field
                 MyTextField(
@@ -196,7 +238,7 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   prefixIcon: Icons.lock,
                 ),
-
+                SizedBox(height: 4.h),
                 // Forgot password?
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -207,9 +249,10 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: goToForgotPasswordPage,
                         child: Text(
                           'Forgot Password?',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Color(0xFF4CAF50),
                             fontWeight: FontWeight.w600,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ),
@@ -217,14 +260,36 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 15.h),
 
                 // Sign In
                 _isLoading
                     ? CircularProgressIndicator(color: Color(0xFF4CAF50))
-                    : MyButton(onTap: signUserIn),
+                    : Container(
+                      margin: EdgeInsets.symmetric(horizontal: 25),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: signUserIn,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF4CAF50),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 13,
+                            ),
+                          ),
+                          child: Text(
+                            'Login',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.5.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
 
-                SizedBox(height: 25),
+                SizedBox(height: 25.h),
 
                 // Or continue with
                 Padding(
@@ -238,7 +303,10 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
                           'Or continue with',
-                          style: TextStyle(color: Colors.grey[700]),
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey[700],
+                            fontSize: 12.sp,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -248,20 +316,16 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 25.h),
 
                 // Google + Apple sign in buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Google button
-                    SquareTile(imagePath: 'lib/images/google logo.png'),
-                    const SizedBox(width: 25),
-                    // Apple button
-                    SquareTile(imagePath: 'lib/images/apple logo.png'),
-                  ],
+                GestureDetector(
+                  onTap: _signInWithGoogle,
+                  child: SquareTile(imagePath: 'lib/images/google logo.png'),
                 ),
+                SizedBox(width: 25.h),
 
+                // Apple button
                 SizedBox(height: 20),
 
                 // Not a member? Register now
@@ -270,23 +334,27 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       'Not a member?',
-                      style: TextStyle(color: Colors.grey[700]),
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey[700],
+                        fontSize: 12.sp,
+                      ),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     GestureDetector(
                       onTap: togglePages,
                       child: Text(
                         'Register now',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           color: Color(0xFF4CAF50),
                           fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: 20),
+                SizedBox(height: 20.h),
               ],
             ),
           ),

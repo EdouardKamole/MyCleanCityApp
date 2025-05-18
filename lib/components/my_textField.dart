@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MyTextField extends StatelessWidget {
   final controller;
@@ -33,7 +35,10 @@ class MyTextField extends StatelessWidget {
           fillColor: Colors.grey.shade100,
           filled: true,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[500]),
+          hintStyle: GoogleFonts.poppins(
+            color: Colors.grey[500],
+            fontSize: 13.sp,
+          ),
           prefixIcon:
               prefixIcon != null
                   ? Icon(prefixIcon, color: Color(0xFF4CAF50))

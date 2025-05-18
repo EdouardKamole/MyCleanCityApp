@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:my_clean_city_app/components/my_button.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
-import 'package:my_clean_city_app/login_page.dart'; // Import the login page
+import 'package:my_clean_city_app/login_page.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class RegesterPage extends StatefulWidget {
   final Function()? onTap;
@@ -24,6 +25,9 @@ class _RegesterPageState extends State<RegesterPage> {
 
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Google Sign-In instance
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Sign up user method
   void signUserUp() async {
@@ -92,6 +96,49 @@ class _RegesterPageState extends State<RegesterPage> {
     }
   }
 
+  // Google Sign-In method
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithCredential(credential);
+
+        // Update display name if it's null
+        if (userCredential.user?.displayName == null) {
+          await userCredential.user?.updateDisplayName(
+            nameController.text.trim(),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to sign up with Google. Please try again.';
+      });
+      print("Google Sign-In error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     // Clean up controllers
@@ -129,13 +176,13 @@ class _RegesterPageState extends State<RegesterPage> {
                   ),
                 ),
 
-                SizedBox(height: 20.h),
+                SizedBox(height: 10.h),
 
                 // App name
                 Text(
                   'MyCleanCity',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF388E3C),
                   ),
@@ -214,24 +261,26 @@ class _RegesterPageState extends State<RegesterPage> {
                 // Sign Up button
                 _isLoading
                     ? CircularProgressIndicator(color: Color(0xFF4CAF50))
-                    : ElevatedButton(
-                      onPressed: signUserUp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 120,
-                          vertical: 15,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
+                    : Container(
+                      margin: EdgeInsets.symmetric(horizontal: 25),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: signUserUp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF4CAF50),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 14,
+                            ),
+                          ),
+                          child: Text(
+                            'Sign up',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.5.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -250,7 +299,10 @@ class _RegesterPageState extends State<RegesterPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
                           'Or continue with',
-                          style: TextStyle(color: Colors.grey[700]),
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey[700],
+                            fontSize: 13.sp,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -263,17 +315,13 @@ class _RegesterPageState extends State<RegesterPage> {
                 SizedBox(height: 20.h),
 
                 // Google + Apple sign up buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Google button
-                    SquareTile(imagePath: 'lib/images/google logo.png'),
-                    const SizedBox(width: 25),
-                    // Apple button
-                    SquareTile(imagePath: 'lib/images/apple logo.png'),
-                  ],
+                GestureDetector(
+                  onTap: _signInWithGoogle,
+                  child: SquareTile(imagePath: 'lib/images/google logo.png'),
                 ),
+                const SizedBox(width: 25),
 
+                // Apple button
                 SizedBox(height: 15.h),
 
                 // Already a member? Login now
@@ -282,16 +330,25 @@ class _RegesterPageState extends State<RegesterPage> {
                   children: [
                     Text(
                       'Already have an account?',
-                      style: TextStyle(color: Colors.grey[700]),
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey[700],
+                        fontSize: 12.sp,
+                      ),
                     ),
                     SizedBox(width: 4.w),
                     GestureDetector(
-                      onTap: widget.onTap,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
                       child: Text(
                         'Login now',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           color: Color(0xFF4CAF50),
                           fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
