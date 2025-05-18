@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:my_clean_city_app/pages/request_pickup_screen.dart';
+import 'package:my_clean_city_app/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -408,13 +409,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildProfileContent() {
-    // Placeholder for Profile tab
-    return const Center(
-      child: Text(
-        'Profile section coming soon',
-        style: TextStyle(fontSize: 18),
-      ),
-    );
+    // Navigate to the dedicated profile page
+    return ProfilePage();
   }
 
   Widget _buildHistoryContent() {
