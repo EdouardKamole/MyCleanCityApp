@@ -3,9 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:my_clean_city_app/pages/auth_page.dart';
 import 'firebase_options.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cloudinary_url_gen/cloudinary.dart';
+import 'package:cloudinary_flutter/cloudinary_context.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(
+    cloudName: 'dsojq0cm2',
+  );
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MyApp()); // Removed const
 }
