@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart' as http; // Import http
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RequestPickupScreen extends StatefulWidget {
@@ -24,20 +24,27 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   String? _additionalNotes;
   bool _isLoading = false;
   bool _submitLoading = false;
+  final TextEditingController _locationController = TextEditingController();
 
   // Cloudinary configuration
-  final String cloudName = 'dsojq0cm2'; // Replace with your cloud name
-  final String uploadPreset = 'ml_default'; // Replace with your upload preset
+  final String cloudName = 'dsojq0cm2';
+  final String uploadPreset = 'ml_default';
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+    _locationController.text = _currentAddress ?? '';
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage() async {
     if (_images.length >= 4) {
-      // Optionally show a message that the limit has been reached
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('You can only select up to 4 images.')),
       );
@@ -92,6 +99,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
           _currentAddress =
               '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
           _isLoading = false;
+          _locationController.text = _currentAddress!;
         });
       } else {
         print("Location permission not granted");
@@ -124,10 +132,8 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
     try {
       List<String> imageUrls = [];
 
-      // Upload images to Cloudinary
       for (File image in _images) {
         try {
-          // Prepare the request
           var request =
               http.MultipartRequest(
                   'POST',
@@ -140,14 +146,10 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                   await http.MultipartFile.fromPath('file', image.path),
                 );
 
-          // Send the request
           var response = await request.send();
-
-          // Read the response
           var responseBody = await response.stream.bytesToString();
           var data = json.decode(responseBody);
 
-          // Check for errors
           if (response.statusCode == 200) {
             imageUrls.add(data['secure_url']);
           } else {
@@ -178,7 +180,6 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         }
       }
 
-      // Create a new document in Firestore
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       CollectionReference pickupRequests = firestore.collection(
         'pickup_requests',
@@ -187,27 +188,23 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
       await pickupRequests.add({
         'latitude': _currentPosition?.latitude,
         'longitude': _currentPosition?.longitude,
-        'address': _currentAddress,
+        'address': _locationController.text,
         'imageUrls': imageUrls,
         'additionalNotes': _additionalNotes,
         'timestamp': FieldValue.serverTimestamp(),
         'status': "pending",
-        // Add other relevant data here
       });
 
-      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Request submitted successfully!')),
       );
 
-      // Clear the form
       setState(() {
         _images.clear();
         _additionalNotes = null;
       });
     } catch (e) {
       print("Error submitting request: $e");
-      // Show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to submit request. Please try again.')),
       );
@@ -364,40 +361,38 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                           ),
                         ),
                         SizedBox(height: 6.h),
-                        SizedBox(height: 15.h),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Current device location",
+                        TextFormField(
+                          controller: _locationController,
+                          decoration: InputDecoration(
+                            hintText: "Enter pickup location",
+                            hintStyle: GoogleFonts.poppins(fontSize: 12.sp),
+                            prefixIcon: Icon(
+                              Icons.location_pin,
+                              color: Colors.green,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          style: GoogleFonts.poppins(fontSize: 14.sp),
+                        ),
+                        SizedBox(height: 8.h),
+                        if (_currentAddress != null)
+                          Text(
+                            "Current device location: $_currentAddress",
                             style: GoogleFonts.poppins(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_pin,
-                              color: Colors.green,
-                              size: 18.sp,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              _currentAddress != null
-                                  ? " $_currentAddress"
-                                  : _isLoading
-                                  ? "Getting Location..."
-                                  : "Location not available",
-
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                        if (_isLoading)
+                          Text(
+                            "Getting Location...",
+                            style: GoogleFonts.poppins(fontSize: 12.sp),
+                          ),
+                        if (_currentAddress == null && !_isLoading)
+                          Text(
+                            "Location not available",
+                            style: GoogleFonts.poppins(fontSize: 12.sp),
+                          ),
                         SizedBox(height: 20.h),
                       ],
                     ),
@@ -473,7 +468,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                 height: 48.h,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4CAF50), // Match AppBar color
+                    backgroundColor: Color(0xFF4CAF50),
                     textStyle: GoogleFonts.poppins(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
