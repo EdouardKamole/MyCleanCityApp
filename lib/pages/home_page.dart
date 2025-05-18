@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:my_clean_city_app/pages/request_pickup_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -273,7 +274,12 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Navigate to schedule pickup screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RequestPickupScreen(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4CAF50),
@@ -283,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     child: const Text(
-                      'Schedule Pickup',
+                      'Request Pickup',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
