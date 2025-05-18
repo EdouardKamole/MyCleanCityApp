@@ -52,20 +52,18 @@ class _HomePageState extends State<HomePage> {
         //     fontWeight: FontWeight.bold,
         //   ),
         // ),
-        leading: GestureDetector(
-          onTap: () {
+        leading: IconButton(
+          padding: const EdgeInsets.all(8.0),
+          onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ProfilePage()),
             );
           },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundImage: NetworkImage(
-                "https://avatar.iran.liara.run/public/21",
-              ),
+          icon: CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(
+              "https://avatar.iran.liara.run/public/21",
             ),
           ),
         ),
@@ -189,8 +187,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBody() {
     if (_selectedIndex == 0) {
       return _buildHomeContent();
-    } else if (_selectedIndex == 1) {
-      return _buildProfileContent();
     } else {
       return _buildHistoryContent();
     }
