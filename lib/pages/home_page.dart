@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/pages/request_pickup_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -42,127 +44,138 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'MyCleanCity',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        // title: Text(
+        //   'MyCleanCity',
+        //   style: GoogleFonts.poppins(
+        //     color: Colors.white,
+        //     fontWeight: FontWeight.bold,
+        //   ),
+        // ),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(
+              "https://avatar.iran.liara.run/public/21",
+            ),
+          ),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         elevation: 2,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: Colors.white,
+              size: 20.sp,
+            ),
             onPressed: () {
               // Navigate to notifications screen
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              // Sign out functionality
-              _auth.signOut();
-            },
-          ),
         ],
       ),
-      drawer: _buildDrawer(),
+      // drawer: _buildDrawer(),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to report waste screen
-        },
-        backgroundColor: const Color(0xFF4CAF50),
-        child: const Icon(Icons.add_a_photo, color: Colors.white),
-      ),
+
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFF4CAF50),
+        selectedLabelStyle: GoogleFonts.poppins(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: GoogleFonts.poppins(fontSize: 14.sp),
         onTap: _onItemTapped,
       ),
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white70,
-                  child: Icon(Icons.person, size: 40, color: Color(0xFF4CAF50)),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Welcome, ${username ?? "User"}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  _auth.currentUser?.email ?? '',
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.map),
-            title: const Text('Waste Map'),
-            onTap: () {
-              // Navigate to waste map
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Report History'),
-            onTap: () {
-              // Navigate to report history
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              // Navigate to settings screen
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text('Help & Support'),
-            onTap: () {
-              // Navigate to help screen
-              Navigator.pop(context);
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {
-              _auth.signOut();
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDrawer() {
+  //   return Drawer(
+  //     child: ListView(
+  //       padding: EdgeInsets.zero,
+  //       children: <Widget>[
+  //         DrawerHeader(
+  //           decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               const CircleAvatar(
+  //                 radius: 32,
+  //                 backgroundColor: Colors.white70,
+  //                 child: Icon(Icons.person, size: 40, color: Color(0xFF4CAF50)),
+  //               ),
+  //               SizedBox(height: 10.h),
+  //               Text(
+  //                 'Welcome, ${username ?? "User"}',
+  //                 style: GoogleFonts.poppins(
+  //                   color: Colors.white,
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               Text(
+  //                 _auth.currentUser?.email ?? '',
+  //                 style: GoogleFonts.poppins(
+  //                   color: Colors.white70,
+  //                   fontSize: 14.sp,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.map),
+  //           title: const Text('Waste Map'),
+  //           onTap: () {
+  //             // Navigate to waste map
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.history),
+  //           title: const Text('Report History'),
+  //           onTap: () {
+  //             // Navigate to report history
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.settings),
+  //           title: const Text('Settings'),
+  //           onTap: () {
+  //             // Navigate to settings screen
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.help_outline),
+  //           title: const Text('Help & Support'),
+  //           onTap: () {
+  //             // Navigate to help screen
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //         const Divider(),
+  //         ListTile(
+  //           leading: const Icon(Icons.logout),
+  //           title: const Text('Logout'),
+  //           onTap: () {
+  //             _auth.signOut();
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildBody() {
     if (_selectedIndex == 0) {
@@ -202,22 +215,25 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Text(
                     'Welcome back, ${username ?? "User"}!',
-                    style: const TextStyle(
-                      fontSize: 22,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF388E3C),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10.h),
+                  Text(
                     'Help make our city cleaner by reporting waste locations.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Request Pickup Section
             Container(
@@ -251,27 +267,30 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     child: const Icon(
-                      Icons.add,
+                      Icons.fire_truck_outlined,
                       size: 30,
                       color: Color(0xFF4CAF50),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16.h),
+                  Text(
                     'Request a New Pickup',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8.h),
+                  Text(
                     'Schedule a pickup for your trash easily',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -288,12 +307,12 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Request Pickup',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -301,14 +320,14 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Recent Activity Section
-            const Text(
+            Text(
               'Recent Activity',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.poppins(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700,
                 color: Colors.black87,
               ),
             ),
@@ -368,21 +387,24 @@ class _HomePageState extends State<HomePage> {
             ),
             child: Icon(icon, color: Colors.grey.shade700),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.h),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
                   ),
                 ),
                 Text(
                   time,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey.shade600,
+                    fontSize: 14.sp,
+                  ),
                 ),
               ],
             ),
@@ -395,10 +417,10 @@ class _HomePageState extends State<HomePage> {
             ),
             child: Text(
               status,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 color: statusTextColor,
                 fontWeight: FontWeight.w500,
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
           ),
