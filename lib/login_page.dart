@@ -5,7 +5,7 @@ import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
 // Fix import paths - ensure these paths are correct relative to your project structure
 import 'package:my_clean_city_app/forgotpassword_page.dart';
-import 'package:my_clean_city_app/regester_page.dart'; // Note: Using the actual file name with "Regester" spelling
+import 'package:my_clean_city_app/register.dart'; // Note: Using the actual file name with "Regester" spelling
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;

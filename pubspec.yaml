@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.3
+  flutter_screenutil: ^5.9.3
+  google_fonts: ^6.2.1
+  dotted_border: ^3.0.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

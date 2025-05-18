@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_clean_city_app/components/my_button.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
@@ -111,12 +112,12 @@ class _RegesterPageState extends State<RegesterPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 35.0),
+                SizedBox(height: 30.h),
 
                 // Logo
                 Container(
-                  height: 100,
-                  width: 100,
+                  height: 100.h,
+                  width: 100.w,
                   decoration: BoxDecoration(
                     color: Color(0xFFE8F5E9),
                     shape: BoxShape.circle,
@@ -128,7 +129,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   ),
                 ),
 
-                const SizedBox(height: 20.0),
+                SizedBox(height: 20.h),
 
                 // App name
                 Text(
@@ -140,15 +141,15 @@ class _RegesterPageState extends State<RegesterPage> {
                   ),
                 ),
 
-                const SizedBox(height: 10.0),
+                SizedBox(height: 10.h),
 
                 // Welcome message
                 Text(
                   'Join us and help keep our city clean!',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16.sp),
                 ),
 
-                const SizedBox(height: 20.0),
+                SizedBox(height: 20.h),
 
                 // Error message if any
                 if (_errorMessage != null)
@@ -168,7 +169,7 @@ class _RegesterPageState extends State<RegesterPage> {
                     ),
                   ),
 
-                if (_errorMessage != null) const SizedBox(height: 15.0),
+                if (_errorMessage != null) SizedBox(height: 15.h),
 
                 // Name field
                 MyTextField(
@@ -178,7 +179,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   prefixIcon: Icons.person,
                 ),
 
-                SizedBox(height: 10),
+                SizedBox(height: 10.h),
 
                 // Email field
                 MyTextField(
@@ -188,7 +189,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   prefixIcon: Icons.email,
                 ),
 
-                SizedBox(height: 10),
+                SizedBox(height: 10.h),
 
                 // Password field
                 MyTextField(
@@ -198,7 +199,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   prefixIcon: Icons.lock,
                 ),
 
-                SizedBox(height: 10),
+                SizedBox(height: 10.h),
 
                 // Confirm password field
                 MyTextField(
@@ -208,7 +209,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   prefixIcon: Icons.lock_outline,
                 ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 25.h),
 
                 // Sign Up button
                 _isLoading
@@ -229,13 +230,13 @@ class _RegesterPageState extends State<RegesterPage> {
                       child: Text(
                         'Sign Up',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
 
-                SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 // Or continue with
                 Padding(
@@ -259,7 +260,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 // Google + Apple sign up buttons
                 Row(
@@ -273,7 +274,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   ],
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 15.h),
 
                 // Already a member? Login now
                 Row(
@@ -283,7 +284,7 @@ class _RegesterPageState extends State<RegesterPage> {
                       'Already have an account?',
                       style: TextStyle(color: Colors.grey[700]),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     GestureDetector(
                       onTap: widget.onTap,
                       child: Text(
@@ -297,7 +298,7 @@ class _RegesterPageState extends State<RegesterPage> {
                   ],
                 ),
 
-                SizedBox(height: 20),
+                SizedBox(height: 20.h),
               ],
             ),
           ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:my_clean_city_app/login_page.dart';
 import 'package:my_clean_city_app/pages/home_page.dart';
 

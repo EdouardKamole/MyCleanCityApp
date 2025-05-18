@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Add this import
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_clean_city_app/pages/request_pickup_screen.dart'; // Add this import
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -56,7 +57,12 @@ class HomePage extends StatelessWidget {
               SizedBox(height: 40),
               ElevatedButton.icon(
                 onPressed: () {
-                  // Navigate to report waste screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestPickupScreen(),
+                    ),
+                  );
                 },
                 icon: Icon(Icons.camera_alt),
                 label: Text('Report Waste'),
