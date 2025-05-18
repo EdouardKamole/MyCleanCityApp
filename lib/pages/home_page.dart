@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_clean_city_app/pages/profile_page.dart';
 import 'package:my_clean_city_app/pages/request_pickup_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -52,20 +51,12 @@ class _HomePageState extends State<HomePage> {
         //     fontWeight: FontWeight.bold,
         //   ),
         // ),
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfilePage()),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundImage: NetworkImage(
-                "https://avatar.iran.liara.run/public/21",
-              ),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(
+              "https://avatar.iran.liara.run/public/21",
             ),
           ),
         ),
