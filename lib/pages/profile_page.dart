@@ -1,8 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_clean_city_app/login_page.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:my_clean_city_app/login_page.dart'; // Adjust import based on your project structure
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,21 +20,119 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? username;
+  String? photoUrl;
   bool isDarkMode = false;
+
+  // Cloudinary configuration
+  final String cloudName = 'dsojq0cm2';
+  final String uploadPreset = 'ml_default';
 
   @override
   void initState() {
     super.initState();
-    _getUserName();
+    _getUserData();
   }
 
-  void _getUserName() {
+  void _getUserData() {
     final user = _auth.currentUser;
     if (user != null) {
-      // Extract name from email or use displayName if available
       setState(() {
         username = user.displayName ?? user.email?.split('@')[0] ?? 'User';
+        photoUrl = user.photoURL;
       });
+      FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((
+        doc,
+      ) {
+        if (doc.exists) {
+          setState(() {
+            photoUrl = doc.data()?['photoUrl'] ?? photoUrl;
+            username = doc.data()?['displayName'] ?? username;
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      if (source == ImageSource.camera) {
+        var status = await Permission.camera.status;
+        if (status.isDenied) {
+          status = await Permission.camera.request();
+          if (status.isDenied || status.isPermanentlyDenied) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Camera permission is required.')),
+            );
+            return;
+          }
+        }
+      }
+
+      final XFile? image = await picker.pickImage(source: source);
+      if (image != null) {
+        String? imageUrl = await _uploadImageToCloudinary(File(image.path));
+        if (imageUrl != null) {
+          final user = _auth.currentUser;
+          if (user != null) {
+            await user.updatePhotoURL(imageUrl);
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .set({
+                  'photoUrl': imageUrl,
+                  'displayName': username,
+                  'email': user.email,
+                }, SetOptions(merge: true));
+            setState(() {
+              photoUrl = imageUrl;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Profile picture updated successfully'),
+                backgroundColor: Color(0xFF4CAF50),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      print('Error picking image from $source: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile picture.')),
+      );
+    }
+  }
+
+  Future<String?> _uploadImageToCloudinary(File image) async {
+    try {
+      var request =
+          http.MultipartRequest(
+              'POST',
+              Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/upload'),
+            )
+            ..fields['upload_preset'] = uploadPreset
+            ..files.add(await http.MultipartFile.fromPath('file', image.path));
+
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      var data = json.decode(responseBody);
+
+      if (response.statusCode == 200) {
+        return data['secure_url'];
+      } else {
+        print('Cloudinary upload error: ${data['error']['message']}');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+        return null;
+      }
+    } catch (e) {
+      print('Cloudinary upload exception: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+      return null;
     }
   }
 
@@ -64,7 +168,6 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -82,18 +185,34 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               child: Column(
                 children: [
-                  // Profile Picture
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
                       CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.grey[200],
-                        child: const Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Color(0xFF4CAF50),
-                        ),
+                        child:
+                            photoUrl != null
+                                ? ClipOval(
+                                  child: Image.network(
+                                    photoUrl!,
+                                    width: 100.w,
+                                    height: 100.h,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.person,
+                                              size: 60,
+                                              color: Color(0xFF4CAF50),
+                                            ),
+                                  ),
+                                )
+                                : const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Color(0xFF4CAF50),
+                                ),
                       ),
                       Container(
                         decoration: const BoxDecoration(
@@ -106,16 +225,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Colors.white,
                             size: 20,
                           ),
-                          onPressed: () {
-                            // Handle profile picture change
-                            _showImagePickerDialog();
-                          },
+                          onPressed: _showImagePickerDialog,
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 16.h),
-                  // User Name
                   Text(
                     username ?? 'User',
                     style: GoogleFonts.poppins(
@@ -124,7 +239,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   SizedBox(height: 4.h),
-                  // User Email
                   Text(
                     _auth.currentUser?.email ?? '',
                     style: GoogleFonts.poppins(
@@ -132,8 +246,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Colors.grey[600],
                     ),
                   ),
-                  SizedBox(height: 14.5.sp),
-                  // Edit Profile Button
+                  SizedBox(height: 14.5.h),
                   OutlinedButton.icon(
                     onPressed: () {
                       _showEditProfileDialog();
@@ -155,10 +268,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
             SizedBox(height: 24.h),
-
-            // User Stats
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -196,10 +306,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
             SizedBox(height: 24.h),
-
-            // Settings Section
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -225,8 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 14.5.sp),
-                  // Notification Settings
+                  SizedBox(height: 14.5.h),
                   _buildSettingsItem(
                     'Notification Preferences',
                     Icons.notifications_outlined,
@@ -235,43 +341,33 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   const Divider(),
-                  // Dark Mode
                   _buildSettingsToggleItem(
                     'Dark Mode',
                     Icons.dark_mode_outlined,
                     isDarkMode,
                     (value) {
-                      // Handle dark mode toggle
                       setState(() {
                         isDarkMode = value;
                       });
-                      // Here you would implement actual theme change
                     },
                   ),
                   const Divider(),
-                  // Language
                   _buildSettingsItem('Language', Icons.language, () {
-                    // Show language selection
                     _showLanguageSelectionDialog();
                   }),
                   const Divider(),
-                  // Help & Support
                   _buildSettingsItem('Help & Support', Icons.help_outline, () {
-                    // Navigate to help screen
                     _showHelpSupportDialog();
                   }),
                   const Divider(),
-                  // Privacy Policy
                   _buildSettingsItem(
                     'Privacy Policy',
                     Icons.privacy_tip_outlined,
                     () {
-                      // Show privacy policy
                       _showPrivacyPolicyDialog();
                     },
                   ),
                   const Divider(),
-                  // Logout
                   _buildSettingsItem(
                     'Logout',
                     Icons.logout,
@@ -284,10 +380,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
             SizedBox(height: 24.h),
-
-            // Version Info
             Center(
               child: Text(
                 'MyCleanCity v1.0.0',
@@ -304,7 +397,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Helper method to build stat items
   Widget _buildStatItem(String value, String label, IconData icon) {
     return Column(
       children: [
@@ -332,7 +424,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Helper method to build settings items
   Widget _buildSettingsItem(
     String title,
     IconData icon,
@@ -352,7 +443,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Helper method to build settings toggle items
   Widget _buildSettingsToggleItem(
     String title,
     IconData icon,
@@ -374,129 +464,366 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dialog for image picker
   void _showImagePickerDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Change Profile Picture'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.photo_camera),
-                title: Text(
-                  'Take a photo',
-                  style: GoogleFonts.poppins(fontSize: 13.sp),
-                ),
-                onTap: () {
-                  // Handle camera option
-                  Navigator.pop(context);
-                  // Add camera functionality here
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: Text(
-                  'Choose from gallery',
-                  style: GoogleFonts.poppins(fontSize: 13.sp),
-                ),
-                onTap: () {
-                  // Handle gallery option
-                  Navigator.pop(context);
-                  // Add gallery functionality here
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                'CANCEL',
-                style: GoogleFonts.poppins(fontSize: 13.sp),
-              ),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(20.r),
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 10.h),
+                Container(
+                  width: 40.w,
+                  height: 5.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2.5.r),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  'Profile Picture',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                if (photoUrl != null) ...[
+                  _buildOption(
+                    icon: Icons.refresh,
+                    label: 'Update Image',
+                    onTap: () => _showImageSourcePicker(),
+                  ),
+                  Divider(height: 1.h, color: Colors.grey.shade300),
+                ],
+                _buildOption(
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+                Divider(height: 1.h, color: Colors.grey.shade300),
+                _buildOption(
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () => _pickImage(ImageSource.camera),
+                ),
+                Divider(height: 1.h, color: Colors.grey.shade300),
+                _buildOption(
+                  icon: Icons.cancel,
+                  label: 'Cancel',
+                  onTap: () => Navigator.pop(context),
+                  color: Colors.red.shade400,
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  // Dialog for editing profile
+  void _showImageSourcePicker() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 10.h),
+                Container(
+                  width: 40.w,
+                  height: 5.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2.5.r),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  'Select Image Source',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                _buildOption(
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+                Divider(height: 1.h, color: Colors.grey.shade300),
+                _buildOption(
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () => _pickImage(ImageSource.camera),
+                ),
+                Divider(height: 1.h, color: Colors.grey.shade300),
+                _buildOption(
+                  icon: Icons.cancel,
+                  label: 'Cancel',
+                  onTap: () => Navigator.pop(context),
+                  color: Colors.red.shade400,
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: () {
+        onTap();
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: (color ?? Color(0xFF4CAF50)).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    blurRadius: 4.r,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(icon, size: 24.sp, color: color ?? Color(0xFF4CAF50)),
+            ),
+            SizedBox(width: 15.w),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showEditProfileDialog() {
     final nameController = TextEditingController(text: username);
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Edit Profile',
-            style: GoogleFonts.poppins(fontSize: 13.sp),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 8.r,
+                  offset: Offset(0, 4),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Email cannot be changed',
-                style: GoogleFonts.poppins(fontSize: 13.sp),
-              ),
-              Text(
-                _auth.currentUser?.email ?? '',
-                style: GoogleFonts.poppins(fontSize: 14.sp),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                'CANCEL',
-                style: GoogleFonts.poppins(fontSize: 13.sp),
-              ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                // Update user profile
-                if (_auth.currentUser != null) {
-                  _auth.currentUser!.updateDisplayName(nameController.text);
-                  setState(() {
-                    username = nameController.text;
-                  });
-                }
-                Navigator.pop(context);
-
-                // Show success snackbar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile updated successfully'),
-                    backgroundColor: Color(0xFF4CAF50),
+            child: Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(2.5.r),
+                    ),
                   ),
-                );
-              },
-              child: Text('SAVE', style: GoogleFonts.poppins(fontSize: 13.sp)),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'Edit Profile',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Color(0xFF4CAF50)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                    ),
+                    style: GoogleFonts.poppins(fontSize: 14.sp),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: TextEditingController(
+                      text: _auth.currentUser?.email ?? '',
+                    ),
+                    enabled: false,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                    ),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildDialogButton(
+                        label: 'Cancel',
+                        color: Colors.red.shade400,
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      _buildDialogButton(
+                        label: 'Save',
+                        color: Color(0xFF4CAF50),
+                        onTap: () async {
+                          final user = _auth.currentUser;
+                          if (user != null) {
+                            await user.updateDisplayName(nameController.text);
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .set({
+                                  'displayName': nameController.text,
+                                  'email': user.email,
+                                  'photoUrl': photoUrl,
+                                }, SetOptions(merge: true));
+                            setState(() {
+                              username = nameController.text;
+                            });
+                          }
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Profile updated successfully'),
+                              backgroundColor: Color(0xFF4CAF50),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                ],
+              ),
             ),
-          ],
+          ),
         );
       },
     );
   }
 
-  // Dialog for notification settings
+  Widget _buildDialogButton({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 4.r,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showNotificationSettingsDialog() {
     bool pushNotifications = true;
     bool emailNotifications = true;
@@ -577,10 +904,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Save notification preferences
                     Navigator.pop(context);
-
-                    // Show success snackbar
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Notification preferences updated'),
@@ -601,7 +925,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dialog for language selection
   void _showLanguageSelectionDialog() {
     showDialog(
       context: context,
@@ -616,7 +939,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 trailing: const Icon(Icons.check, color: Color(0xFF4CAF50)),
                 onTap: () {
                   Navigator.pop(context);
-                  // Apply language selection
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Language set to English'),
@@ -629,7 +951,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: const Text('Spanish'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Apply language selection
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Language set to Spanish'),
@@ -642,7 +963,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: const Text('French'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Apply language selection
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Language set to French'),
@@ -666,7 +986,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dialog for help & support
   void _showHelpSupportDialog() {
     showDialog(
       context: context,
@@ -684,7 +1003,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: Text('FAQ', style: GoogleFonts.poppins(fontSize: 13.sp)),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to FAQ screen
                 },
               ),
               ListTile(
@@ -695,7 +1013,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to contact support screen
                 },
               ),
               ListTile(
@@ -706,7 +1023,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to user manual screen
                 },
               ),
             ],
@@ -724,7 +1040,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dialog for privacy policy
   void _showPrivacyPolicyDialog() {
     showDialog(
       context: context,
@@ -748,7 +1063,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'Last Updated: May 18, 2025',
                   style: GoogleFonts.poppins(
                     fontStyle: FontStyle.italic,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
                 SizedBox(height: 16.h),
@@ -796,7 +1111,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dialog for logout confirmation
   void _showLogoutConfirmDialog() {
     showDialog(
       context: context,
