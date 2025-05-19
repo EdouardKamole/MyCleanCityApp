@@ -12,7 +12,20 @@
           "package_name": "com.example.my_clean_city_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697309619297-crv7u6vp45g0dhjqb9d4uul1lqc2bu6g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.my_clean_city_app",
+            "certificate_hash": "e6430dd9d47d3583ab7c9a4dcf41e022f69a74ea"
+          }
+        },
+        {
+          "client_id": "697309619297-5pmv7kj4v2i9fv88kreothqvbcidhi5s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCpZR9wVNy4hea0rlabqjCJXj8DO9gW0iQ"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697309619297-5pmv7kj4v2i9fv88kreothqvbcidhi5s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "697309619297-2r39m240pjqrunhc187gc59bq7lg2li9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.myCleanCityApp"
+              }
+            }
+          ]
         }
       }
     }
