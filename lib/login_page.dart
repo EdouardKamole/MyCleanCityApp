@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Registration successful',
+            'Login successful',
             style: GoogleFonts.poppins(fontSize: 13.sp),
           ),
           backgroundColor: Color(0xFF4CAF50),
