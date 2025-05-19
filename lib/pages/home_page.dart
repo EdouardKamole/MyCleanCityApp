@@ -19,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? username;
-
   String? photoUrl;
 
   @override
@@ -59,13 +58,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        // title: Text(
-        //   'MyCleanCity',
-        //   style: GoogleFonts.poppins(
-        //     color: Colors.white,
-        //     fontWeight: FontWeight.bold,
-        //   ),
-        // ),
         leading: IconButton(
           padding: const EdgeInsets.all(8.0),
           onPressed: () {
@@ -116,14 +108,15 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // drawer: _buildDrawer(),
       body: _buildBody(),
-
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fire_truck),
+            label: 'Request',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFF4CAF50),
@@ -138,10 +131,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
-    if (_selectedIndex == 0) {
-      return _buildHomeContent();
-    } else {
-      return HistoryPage();
+    switch (_selectedIndex) {
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return HistoryPage();
+      case 2:
+        return RequestPickupScreen();
+      default:
+        return _buildHomeContent();
     }
   }
 
@@ -190,9 +188,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
             SizedBox(height: 24.h),
-
             // Request Pickup Section
             Container(
               width: double.infinity,
@@ -277,9 +273,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
             SizedBox(height: 24.h),
-
             // Recent Activity Section
             Text(
               'Recent Activity',
