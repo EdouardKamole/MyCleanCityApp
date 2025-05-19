@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,6 +31,8 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   final String cloudName = 'dsojq0cm2';
   final String uploadPreset = 'ml_default';
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   void initState() {
     super.initState();
@@ -46,13 +49,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   Future<void> _pickImage() async {
     if (_images.length >= 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(
-            'You can only select up to 4 images.',
-            style: GoogleFonts.poppins(fontSize: 15.sp),
-          ),
-        ),
+        SnackBar(content: Text('You can only select up to 4 images.')),
       );
       return;
     }
@@ -323,10 +320,8 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
             print('Cloudinary upload error: ${data['error']['message']}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                backgroundColor: Colors.red,
                 content: Text(
                   'Failed to upload image: ${data['error']['message']}',
-                  style: GoogleFonts.poppins(fontSize: 15.sp),
                 ),
               ),
             );
@@ -354,6 +349,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
       }
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+
       CollectionReference pickupRequests = firestore.collection(
         'pickup_requests',
       );
@@ -366,11 +362,12 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         'additionalNotes': _additionalNotes,
         'timestamp': FieldValue.serverTimestamp(),
         'status': "pending",
+        'email': _auth.currentUser!.email ?? '',
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.green.shade500,
+          backgroundColor: Colors.green,
           content: Text(
             'Request submitted successfully!',
             style: GoogleFonts.poppins(fontSize: 15.sp),
@@ -605,7 +602,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                           ),
                           Text(
                             "(Optional)",
-                            style: GoogleFonts.poppins(fontSize: 12.5.sp),
+                            style: GoogleFonts.poppins(fontSize: 13.5.sp),
                           ),
                         ],
                       ),
@@ -622,7 +619,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                         decoration: InputDecoration(
                           hintText: "Enter additional notes here...",
                           hintStyle: GoogleFonts.poppins(
-                            fontSize: 12.sp,
+                            fontSize: 14.5.sp,
                             color: Colors.grey.shade400,
                           ),
                           border: OutlineInputBorder(
