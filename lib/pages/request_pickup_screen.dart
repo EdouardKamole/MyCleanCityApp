@@ -46,18 +46,162 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   Future<void> _pickImage() async {
     if (_images.length >= 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You can only select up to 4 images.')),
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'You can only select up to 4 images.',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
+          ),
+        ),
       );
       return;
     }
 
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    // Show enhanced bottom sheet
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 10.h),
+              // Grabber handle
+              Container(
+                width: 40.w,
+                height: 5.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2.5.r),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                'Choose Image Source',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              _buildOption(
+                icon: Icons.photo_library,
+                label: 'Gallery',
+                onTap: () => _pickImageFromSource(ImageSource.gallery),
+              ),
+              Divider(height: 1.h, color: Colors.grey.shade300),
+              _buildOption(
+                icon: Icons.camera_alt,
+                label: 'Camera',
+                onTap: () => _pickImageFromSource(ImageSource.camera),
+              ),
+              Divider(height: 1.h, color: Colors.grey.shade300),
+              _buildOption(
+                icon: Icons.cancel,
+                label: 'Cancel',
+                onTap: () => Navigator.pop(context),
+                color: Colors.red.shade400,
+              ),
+              SizedBox(height: 20.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-    if (image != null) {
-      setState(() {
-        _images.add(File(image.path));
-      });
+  Widget _buildOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: () {
+        onTap();
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: (color ?? Color(0xFF4CAF50)).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    blurRadius: 4.r,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(icon, size: 24.sp, color: color ?? Color(0xFF4CAF50)),
+            ),
+            SizedBox(width: 15.w),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      if (source == ImageSource.camera) {
+        var status = await Permission.camera.status;
+        if (status.isDenied) {
+          status = await Permission.camera.request();
+          if (status.isDenied || status.isPermanentlyDenied) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Camera permission is required.',
+                  style: GoogleFonts.poppins(fontSize: 15.sp),
+                ),
+              ),
+            );
+            return;
+          }
+        }
+      }
+
+      final XFile? image = await picker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _images.add(File(image.path));
+        });
+      }
+    } catch (e) {
+      print('Error picking image from $source: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Failed to pick image. Please try again.',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
+          ),
+        ),
+      );
     }
   }
 
@@ -76,7 +220,12 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
             _isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Location permission is required.')),
+            SnackBar(
+              content: Text(
+                'Location permission is required.',
+                style: GoogleFonts.poppins(fontSize: 15.sp),
+              ),
+            ),
           );
           return;
         }
@@ -107,7 +256,12 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location permission is required.')),
+          SnackBar(
+            content: Text(
+              'Location permission is required.',
+              style: GoogleFonts.poppins(fontSize: 15.sp),
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -127,7 +281,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
   Future<void> _submitRequest() async {
     if (_images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select at least one image.')),
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Please select at least one image.',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
+          ),
+        ),
       );
       return;
     }
@@ -163,8 +323,10 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
             print('Cloudinary upload error: ${data['error']['message']}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
+                backgroundColor: Colors.red,
                 content: Text(
                   'Failed to upload image: ${data['error']['message']}',
+                  style: GoogleFonts.poppins(fontSize: 15.sp),
                 ),
               ),
             );
@@ -177,7 +339,11 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
           print('Cloudinary upload exception: $e');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to upload image. Please try again.'),
+              backgroundColor: Colors.red,
+              content: Text(
+                'Failed to upload image. Please try again.',
+                style: GoogleFonts.poppins(fontSize: 15.sp),
+              ),
             ),
           );
           setState(() {
@@ -203,7 +369,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Request submitted successfully!')),
+        SnackBar(
+          backgroundColor: Colors.green.shade500,
+          content: Text(
+            'Request submitted successfully!',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
+          ),
+        ),
       );
 
       setState(() {
@@ -213,7 +385,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
     } catch (e) {
       print("Error submitting request: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit request. Please try again.')),
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Failed to submit request. Please try again.',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
+          ),
+        ),
       );
     } finally {
       setState(() {
@@ -271,15 +449,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                         ),
                       ),
                       SizedBox(height: 15.h),
-                      // Image Selection Area
                       Container(
                         height: 100.h,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: _images.length + 1, // +1 for the add icon
+                          itemCount: _images.length + 1,
                           itemBuilder: (context, index) {
                             if (index == _images.length) {
-                              // Add icon
                               return InkWell(
                                 onTap: _pickImage,
                                 child: Container(
@@ -300,7 +476,6 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                                 ),
                               );
                             } else {
-                              // Image preview
                               return Stack(
                                 children: [
                                   Container(

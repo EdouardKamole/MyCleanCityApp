@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "com.example.my_clean_city_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973" //  Required by Firebase
+    ndkVersion = "27.0.12077973"
 
 
     compileOptions {
@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
     applicationId = "com.example.my_clean_city_app"
-    minSdk = 23 // 👈 Required by firebase_auth
+    minSdk = 23 
     targetSdk = flutter.targetSdkVersion
     versionCode = flutter.versionCode
     versionName = flutter.versionName
