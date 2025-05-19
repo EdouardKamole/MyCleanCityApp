@@ -89,7 +89,10 @@ class _ProfilePageState extends State<ProfilePage> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Profile picture updated successfully'),
+                content: Text(
+                  'Profile picture updated successfully',
+                  style: GoogleFonts.poppins(fontSize: 15.sp),
+                ),
                 backgroundColor: Color(0xFF4CAF50),
               ),
             );

@@ -6,6 +6,7 @@ import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
 import 'package:my_clean_city_app/login_page.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegesterPage extends StatefulWidget {
   final Function()? onTap;
@@ -29,9 +30,12 @@ class _RegesterPageState extends State<RegesterPage> {
   // Google Sign-In instance
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  // Firestore instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // Sign up user method
   void signUserUp() async {
-    // First validate inputs
+    // Validate inputs
     if (emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty ||
         confirmPasswordController.text.trim().isEmpty ||
@@ -56,34 +60,39 @@ class _RegesterPageState extends State<RegesterPage> {
     });
 
     try {
-      // Create user
+      // Create user with Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
 
-      // Update display name
+      // Update display name in Firebase Auth
       await userCredential.user?.updateDisplayName(nameController.text.trim());
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'displayName': nameController.text.trim(),
+        'email': emailController.text.trim(),
+        'uid': userCredential.user!.uid,
+      }, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Registration successful',
-            style: GoogleFonts.poppins(fontSize: 13.sp),
+            style: GoogleFonts.poppins(fontSize: 15.sp),
           ),
           backgroundColor: Color(0xFF4CAF50),
         ),
       );
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
       );
-
-      // User is automatically signed in after registration
     } on FirebaseAuthException catch (e) {
-      // Handle specific Firebase Auth exceptions
+      // Handle Firebase Auth exceptions
       switch (e.code) {
         case 'email-already-in-use':
           _errorMessage = 'This email is already registered.';
@@ -97,7 +106,6 @@ class _RegesterPageState extends State<RegesterPage> {
         default:
           _errorMessage = e.message ?? 'Registration failed. Please try again.';
       }
-
       setState(() {});
     } catch (e) {
       setState(() {
@@ -134,12 +142,40 @@ class _RegesterPageState extends State<RegesterPage> {
         UserCredential userCredential = await FirebaseAuth.instance
             .signInWithCredential(credential);
 
-        // Update display name if it's null
-        if (userCredential.user?.displayName == null) {
-          await userCredential.user?.updateDisplayName(
-            nameController.text.trim(),
-          );
+        // Get display name (prefer Google-provided name, fallback to nameController)
+        String displayName =
+            userCredential.user?.displayName ??
+            (nameController.text.trim().isNotEmpty
+                ? nameController.text.trim()
+                : googleUser.displayName ?? 'User');
+
+        // Update display name in Firebase Auth if needed
+        if (userCredential.user?.displayName == null ||
+            userCredential.user?.displayName != displayName) {
+          await userCredential.user?.updateDisplayName(displayName);
         }
+
+        // Save user data to Firestore
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'displayName': displayName,
+          'email': userCredential.user!.email,
+          'uid': userCredential.user!.uid,
+        }, SetOptions(merge: true));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Google Sign-In successful',
+              style: GoogleFonts.poppins(fontSize: 15.sp),
+            ),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
       }
     } catch (e) {
       setState(() {
@@ -330,14 +366,12 @@ class _RegesterPageState extends State<RegesterPage> {
 
                 SizedBox(height: 20.h),
 
-                // Google + Apple sign up buttons
+                // Google Sign-In button
                 GestureDetector(
                   onTap: _signInWithGoogle,
                   child: SquareTile(imagePath: 'lib/images/google logo.png'),
                 ),
-                const SizedBox(width: 25),
 
-                // Apple button
                 SizedBox(height: 15.h),
 
                 // Already a member? Login now
