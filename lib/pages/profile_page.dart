@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:my_clean_city_app/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,6 +30,14 @@ class _ProfilePageState extends State<ProfilePage> {
         username = user.displayName ?? user.email?.split('@')[0] ?? 'User';
       });
     }
+  }
+
+  Future<void> SignOut() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
   }
 
   @override
@@ -103,29 +114,35 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // User Name
                   Text(
                     username ?? 'User',
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: GoogleFonts.poppins(
+                      fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   // User Email
                   Text(
                     _auth.currentUser?.email ?? '',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.5.sp,
+                      color: Colors.grey[600],
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 14.5.sp),
                   // Edit Profile Button
                   OutlinedButton.icon(
                     onPressed: () {
                       _showEditProfileDialog();
                     },
                     icon: const Icon(Icons.edit, size: 18),
-                    label: const Text('Edit Profile'),
+                    label: Text(
+                      'Edit Profile',
+                      style: GoogleFonts.poppins(fontSize: 13.sp),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF4CAF50),
                       side: const BorderSide(color: Color(0xFF4CAF50)),
@@ -139,7 +156,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // User Stats
             Container(
@@ -160,11 +177,14 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Your Impact',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -177,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Settings Section
             Container(
@@ -198,11 +218,14 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Settings',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 14.5.sp),
                   // Notification Settings
                   _buildSettingsItem(
                     'Notification Preferences',
@@ -262,16 +285,19 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Version Info
             Center(
               child: Text(
                 'MyCleanCity v1.0.0',
-                style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                style: GoogleFonts.poppins(
+                  color: Colors.grey[500],
+                  fontSize: 14.sp,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
         ),
       ),
@@ -290,12 +316,18 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           child: Icon(icon, color: const Color(0xFF4CAF50), size: 24),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        Text(
+          label,
+          style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.grey[600]),
+        ),
       ],
     );
   }
@@ -311,8 +343,11 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: iconColor),
-      title: Text(title, style: TextStyle(fontSize: 16, color: textColor)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(fontSize: 14.5.sp, color: textColor),
+      ),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
   }
@@ -329,7 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
       leading: Icon(icon, color: Colors.black54),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
+        style: GoogleFonts.poppins(fontSize: 14.5.sp, color: Colors.black87),
       ),
       trailing: Switch(
         value: value,
@@ -345,13 +380,16 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Change Profile Picture'),
+          title: Text('Change Profile Picture'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Take a photo'),
+                leading: Icon(Icons.photo_camera),
+                title: Text(
+                  'Take a photo',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
+                ),
                 onTap: () {
                   // Handle camera option
                   Navigator.pop(context);
@@ -360,7 +398,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from gallery'),
+                title: Text(
+                  'Choose from gallery',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
+                ),
                 onTap: () {
                   // Handle gallery option
                   Navigator.pop(context);
@@ -374,7 +415,10 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('CANCEL'),
+              child: Text(
+                'CANCEL',
+                style: GoogleFonts.poppins(fontSize: 13.sp),
+              ),
             ),
           ],
         );
@@ -390,7 +434,10 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Edit Profile'),
+          title: Text(
+            'Edit Profile',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -402,13 +449,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Email cannot be changed',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: GoogleFonts.poppins(fontSize: 13.sp),
               ),
               Text(
                 _auth.currentUser?.email ?? '',
-                style: const TextStyle(fontSize: 14),
+                style: GoogleFonts.poppins(fontSize: 14.sp),
               ),
             ],
           ),
@@ -417,7 +464,10 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('CANCEL'),
+              child: Text(
+                'CANCEL',
+                style: GoogleFonts.poppins(fontSize: 13.sp),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -438,7 +488,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 );
               },
-              child: const Text('SAVE'),
+              child: Text('SAVE', style: GoogleFonts.poppins(fontSize: 13.sp)),
             ),
           ],
         );
@@ -458,13 +508,22 @@ class _ProfilePageState extends State<ProfilePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Notification Preferences'),
+              title: Text(
+                'Notification Preferences',
+                style: GoogleFonts.poppins(fontSize: 14.sp),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SwitchListTile(
-                    title: const Text('Push Notifications'),
-                    subtitle: const Text('Alerts on your device'),
+                    title: Text(
+                      'Push Notifications',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
+                    subtitle: Text(
+                      'Alerts on your device',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
                     value: pushNotifications,
                     onChanged: (bool value) {
                       setState(() {
@@ -473,8 +532,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   SwitchListTile(
-                    title: const Text('Email Notifications'),
-                    subtitle: const Text('Updates sent to your email'),
+                    title: Text(
+                      'Email Notifications',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
+                    subtitle: Text(
+                      'Updates sent to your email',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
                     value: emailNotifications,
                     onChanged: (bool value) {
                       setState(() {
@@ -483,8 +548,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   SwitchListTile(
-                    title: const Text('Pickup Reminders'),
-                    subtitle: const Text('Reminders before scheduled pickups'),
+                    title: Text(
+                      'Pickup Reminders',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
+                    subtitle: Text(
+                      'Reminders before scheduled pickups',
+                      style: GoogleFonts.poppins(fontSize: 14.sp),
+                    ),
                     value: reminderNotifications,
                     onChanged: (bool value) {
                       setState(() {
@@ -499,7 +570,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('CANCEL'),
+                  child: Text(
+                    'CANCEL',
+                    style: GoogleFonts.poppins(fontSize: 14.sp),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -514,7 +588,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     );
                   },
-                  child: const Text('SAVE'),
+                  child: Text(
+                    'SAVE',
+                    style: GoogleFonts.poppins(fontSize: 14.sp),
+                  ),
                 ),
               ],
             );
@@ -595,13 +672,16 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Help & Support'),
+          title: Text(
+            'Help & Support',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.help),
-                title: const Text('FAQ'),
+                title: Text('FAQ', style: GoogleFonts.poppins(fontSize: 13.sp)),
                 onTap: () {
                   Navigator.pop(context);
                   // Navigate to FAQ screen
@@ -609,7 +689,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.chat),
-                title: const Text('Contact Support'),
+                title: Text(
+                  'Contact Support',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   // Navigate to contact support screen
@@ -617,7 +700,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.book),
-                title: const Text('User Manual'),
+                title: Text(
+                  'User Manual',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   // Navigate to user manual screen
@@ -630,7 +716,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('CLOSE'),
+              child: Text('CLOSE', style: GoogleFonts.poppins(fontSize: 13.sp)),
             ),
           ],
         );
@@ -644,34 +730,42 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Privacy Policy'),
+          title: Text('Privacy Policy'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Text(
                   'Privacy Policy for MyCleanCity',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.sp,
+                  ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'Last Updated: May 18, 2025',
-                  style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
+                  style: GoogleFonts.poppins(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12,
+                  ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   'MyCleanCity is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and disclose information about you when you use our mobile application.',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'Information We Collect:\n'
                   '• Personal information such as name and email address\n'
                   '• Location data when reporting waste\n'
                   '• Device information\n'
                   '• Usage data',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'How We Use Your Information:\n'
                   '• To provide and maintain our services\n'
@@ -679,10 +773,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   '• To allow participation in interactive features\n'
                   '• To provide customer support\n'
                   '• To analyze usage patterns and improve our app',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'For more information, please contact support@mycleanity.com',
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
                 ),
               ],
             ),
@@ -692,7 +788,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('CLOSE'),
+              child: Text('CLOSE', style: GoogleFonts.poppins(fontSize: 16.sp)),
             ),
           ],
         );
@@ -706,25 +802,27 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
+          title: Text('Logout'),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('CANCEL'),
+              child: Text(
+                'CANCEL',
+                style: GoogleFonts.poppins(fontSize: 13.sp),
+              ),
             ),
             TextButton(
-              onPressed: () {
-                // Perform logout
-                _auth.signOut();
-                Navigator.pop(context);
-
-                // Here you might want to navigate to login screen
-                // Navigator.of(context).pushReplacementNamed('/login');
-              },
-              child: const Text('LOGOUT', style: TextStyle(color: Colors.red)),
+              onPressed: SignOut,
+              child: Text(
+                'LOGOUT',
+                style: GoogleFonts.poppins(fontSize: 13.sp, color: Colors.red),
+              ),
             ),
           ],
         );

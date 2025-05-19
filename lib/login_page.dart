@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
 import 'package:my_clean_city_app/forgotpassword_page.dart';
+import 'package:my_clean_city_app/pages/home_page.dart';
 import 'package:my_clean_city_app/register.dart';
 import 'package:google_sign_in/google_sign_in.dart'; // Import Google Sign-In
 
@@ -49,6 +50,21 @@ class _LoginPageState extends State<LoginPage> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Registration successful',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
+          ),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } on FirebaseAuthException catch (e) {
       // Handle specific Firebase Auth exceptions
       switch (e.code) {
@@ -68,7 +84,9 @@ class _LoginPageState extends State<LoginPage> {
           _errorMessage =
               e.message ?? 'Authentication failed. Please try again.';
       }
-      setState(() {});
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
         _errorMessage = 'An error occurred. Please try again.';
@@ -102,6 +120,11 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         await FirebaseAuth.instance.signInWithCredential(credential);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
       }
     } catch (e) {
       setState(() {

@@ -66,6 +66,21 @@ class _RegesterPageState extends State<RegesterPage> {
       // Update display name
       await userCredential.user?.updateDisplayName(nameController.text.trim());
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Registration successful',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
+          ),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+
       // User is automatically signed in after registration
     } on FirebaseAuthException catch (e) {
       // Handle specific Firebase Auth exceptions
@@ -82,6 +97,7 @@ class _RegesterPageState extends State<RegesterPage> {
         default:
           _errorMessage = e.message ?? 'Registration failed. Please try again.';
       }
+
       setState(() {});
     } catch (e) {
       setState(() {

@@ -8,11 +8,11 @@ import 'package:cloudinary_flutter/cloudinary_context.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   CloudinaryContext.cloudinary = Cloudinary.fromCloudName(
     cloudName: 'dsojq0cm2',
   );
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MyApp()); // Removed const
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp(
-          // Removed const here
           debugShowCheckedModeBanner: false,
           title: 'MyCleanCity',
           theme: ThemeData(
