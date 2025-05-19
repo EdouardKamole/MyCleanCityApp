@@ -4,25 +4,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
-import 'package:my_clean_city_app/login_page.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_clean_city_app/screens/forgotpassword_screen.dart';
+import 'package:my_clean_city_app/screens/home_screen.dart';
+import 'package:my_clean_city_app/screens/register_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart'; // Import Google Sign-In
 
-class RegesterPage extends StatefulWidget {
+class LoginPage extends StatefulWidget {
   final Function()? onTap;
 
-  const RegesterPage({super.key, required this.onTap});
+  const LoginPage({super.key, this.onTap});
 
   @override
-  State<RegesterPage> createState() => _RegesterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegesterPageState extends State<RegesterPage> {
-  // Text controllers for form fields
+class _LoginPageState extends State<LoginPage> {
+  // Text editing controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  final nameController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -30,26 +29,13 @@ class _RegesterPageState extends State<RegesterPage> {
   // Google Sign-In instance
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Firestore instance
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // Sign up user method
-  void signUserUp() async {
+  // Sign user in method
+  void signUserIn() async {
     // Validate inputs
     if (emailController.text.trim().isEmpty ||
-        passwordController.text.trim().isEmpty ||
-        confirmPasswordController.text.trim().isEmpty ||
-        nameController.text.trim().isEmpty) {
+        passwordController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = "Please fill in all fields";
-      });
-      return;
-    }
-
-    // Validate password match
-    if (passwordController.text != confirmPasswordController.text) {
-      setState(() {
-        _errorMessage = "Passwords don't match";
+        _errorMessage = "Please enter both email and password";
       });
       return;
     }
@@ -60,28 +46,16 @@ class _RegesterPageState extends State<RegesterPage> {
     });
 
     try {
-      // Create user with Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
-
-      // Update display name in Firebase Auth
-      await userCredential.user?.updateDisplayName(nameController.text.trim());
-
-      // Save user data to Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'displayName': nameController.text.trim(),
-        'email': emailController.text.trim(),
-        'uid': userCredential.user!.uid,
-      }, SetOptions(merge: true));
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Registration successful',
-            style: GoogleFonts.poppins(fontSize: 15.sp),
+            'Login successful',
+            style: GoogleFonts.poppins(fontSize: 13.sp),
           ),
           backgroundColor: Color(0xFF4CAF50),
         ),
@@ -89,24 +63,30 @@ class _RegesterPageState extends State<RegesterPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     } on FirebaseAuthException catch (e) {
-      // Handle Firebase Auth exceptions
+      // Handle specific Firebase Auth exceptions
       switch (e.code) {
-        case 'email-already-in-use':
-          _errorMessage = 'This email is already registered.';
+        case 'user-not-found':
+          _errorMessage = 'No user found with this email.';
           break;
-        case 'weak-password':
-          _errorMessage = 'Password is too weak.';
+        case 'wrong-password':
+          _errorMessage = 'Wrong password provided.';
           break;
         case 'invalid-email':
           _errorMessage = 'The email address is not valid.';
           break;
+        case 'user-disabled':
+          _errorMessage = 'This user account has been disabled.';
+          break;
         default:
-          _errorMessage = e.message ?? 'Registration failed. Please try again.';
+          _errorMessage =
+              e.message ?? 'Authentication failed. Please try again.';
       }
-      setState(() {});
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
         _errorMessage = 'An error occurred. Please try again.';
@@ -139,47 +119,16 @@ class _RegesterPageState extends State<RegesterPage> {
           idToken: googleAuth.idToken,
         );
 
-        UserCredential userCredential = await FirebaseAuth.instance
-            .signInWithCredential(credential);
-
-        // Get display name (prefer Google-provided name, fallback to nameController)
-        String displayName =
-            userCredential.user?.displayName ??
-            (nameController.text.trim().isNotEmpty
-                ? nameController.text.trim()
-                : googleUser.displayName ?? 'User');
-
-        // Update display name in Firebase Auth if needed
-        if (userCredential.user?.displayName == null ||
-            userCredential.user?.displayName != displayName) {
-          await userCredential.user?.updateDisplayName(displayName);
-        }
-
-        // Save user data to Firestore
-        await _firestore.collection('users').doc(userCredential.user!.uid).set({
-          'displayName': displayName,
-          'email': userCredential.user!.email,
-          'uid': userCredential.user!.uid,
-        }, SetOptions(merge: true));
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Google Sign-In successful',
-              style: GoogleFonts.poppins(fontSize: 15.sp),
-            ),
-            backgroundColor: Color(0xFF4CAF50),
-          ),
-        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to sign up with Google. Please try again.';
+        _errorMessage = 'Failed to sign in with Google. Please try again.';
       });
       print("Google Sign-In error: $e");
     } finally {
@@ -191,13 +140,35 @@ class _RegesterPageState extends State<RegesterPage> {
     }
   }
 
+  // Toggle between login and register
+  void togglePages() {
+    if (widget.onTap != null) {
+      widget.onTap!();
+    } else {
+      // Navigate to register page if direct navigation is needed
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => RegesterPage(onTap: () => Navigator.pop(context)),
+        ),
+      );
+    }
+  }
+
+  // Navigate to forgot password page
+  void goToForgotPasswordPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+    );
+  }
+
   @override
   void dispose() {
-    // Clean up controllers
+    // Clean up controllers when the widget is disposed
     emailController.dispose();
     passwordController.dispose();
-    confirmPasswordController.dispose();
-    nameController.dispose();
     super.dispose();
   }
 
@@ -211,24 +182,24 @@ class _RegesterPageState extends State<RegesterPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 30.h),
+                SizedBox(height: 50.h),
 
                 // Logo
                 Container(
-                  height: 100.h,
-                  width: 100.w,
+                  height: 100,
+                  width: 100,
                   decoration: BoxDecoration(
                     color: Color(0xFFE8F5E9),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.recycling,
-                    size: 60,
+                    size: 60.sp,
                     color: Color(0xFF4CAF50),
                   ),
                 ),
 
-                SizedBox(height: 10.h),
+                SizedBox(height: 25.h),
 
                 // App name
                 Text(
@@ -242,13 +213,16 @@ class _RegesterPageState extends State<RegesterPage> {
 
                 SizedBox(height: 10.h),
 
-                // Welcome message
+                // Welcome back message
                 Text(
-                  'Join us and help keep our city clean!',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 16.sp),
+                  'Welcome back, help keep our city clean!',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[700],
+                    fontSize: 16.sp,
+                  ),
                 ),
 
-                SizedBox(height: 20.h),
+                SizedBox(height: 25.h),
 
                 // Error message if any
                 if (_errorMessage != null)
@@ -262,25 +236,15 @@ class _RegesterPageState extends State<RegesterPage> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(color: Colors.red[900]),
+                        style: GoogleFonts.poppins(color: Colors.red[900]),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   ),
 
-                if (_errorMessage != null) SizedBox(height: 15.h),
+                if (_errorMessage != null) SizedBox(height: 20.sp),
 
-                // Name field
-                MyTextField(
-                  controller: nameController,
-                  hintText: 'Full Name',
-                  obscureText: false,
-                  prefixIcon: Icons.person,
-                ),
-
-                SizedBox(height: 10.h),
-
-                // Email field
+                // Email textfield
                 MyTextField(
                   controller: emailController,
                   hintText: 'Email',
@@ -297,20 +261,31 @@ class _RegesterPageState extends State<RegesterPage> {
                   obscureText: true,
                   prefixIcon: Icons.lock,
                 ),
-
-                SizedBox(height: 10.h),
-
-                // Confirm password field
-                MyTextField(
-                  controller: confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
-                  prefixIcon: Icons.lock_outline,
+                SizedBox(height: 4.h),
+                // Forgot password?
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: goToForgotPasswordPage,
+                        child: Text(
+                          'Forgot Password?',
+                          style: GoogleFonts.poppins(
+                            color: Color(0xFF4CAF50),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                SizedBox(height: 25.h),
+                SizedBox(height: 15.h),
 
-                // Sign Up button
+                // Sign In
                 _isLoading
                     ? CircularProgressIndicator(color: Color(0xFF4CAF50))
                     : Container(
@@ -318,26 +293,27 @@ class _RegesterPageState extends State<RegesterPage> {
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: signUserUp,
+                          onPressed: signUserIn,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF4CAF50),
                             padding: EdgeInsets.symmetric(
                               horizontal: 13,
-                              vertical: 14,
+                              vertical: 13,
                             ),
                           ),
                           child: Text(
-                            'Sign up',
+                            'Login',
                             style: GoogleFonts.poppins(
                               fontSize: 13.5.sp,
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
                     ),
 
-                SizedBox(height: 20.h),
+                SizedBox(height: 25.h),
 
                 // Or continue with
                 Padding(
@@ -353,7 +329,7 @@ class _RegesterPageState extends State<RegesterPage> {
                           'Or continue with',
                           style: GoogleFonts.poppins(
                             color: Colors.grey[700],
-                            fontSize: 13.sp,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ),
@@ -364,22 +340,24 @@ class _RegesterPageState extends State<RegesterPage> {
                   ),
                 ),
 
-                SizedBox(height: 20.h),
+                SizedBox(height: 25.h),
 
-                // Google Sign-In button
+                // Google + Apple sign in buttons
                 GestureDetector(
                   onTap: _signInWithGoogle,
                   child: SquareTile(imagePath: 'lib/images/google logo.png'),
                 ),
+                SizedBox(width: 25.h),
 
-                SizedBox(height: 15.h),
+                // Apple button
+                SizedBox(height: 20),
 
-                // Already a member? Login now
+                // Not a member? Register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account?',
+                      'Not a member?',
                       style: GoogleFonts.poppins(
                         color: Colors.grey[700],
                         fontSize: 12.sp,
@@ -387,14 +365,9 @@ class _RegesterPageState extends State<RegesterPage> {
                     ),
                     SizedBox(width: 4.w),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
-                      },
+                      onTap: togglePages,
                       child: Text(
-                        'Login now',
+                        'Register now',
                         style: GoogleFonts.poppins(
                           color: Color(0xFF4CAF50),
                           fontWeight: FontWeight.bold,

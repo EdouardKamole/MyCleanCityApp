@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "697309619297-f7596r526th3u3krjjsta778d4naeja7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.my_clean_city_app",
+            "certificate_hash": "7457ac141c11b0ab33d9742598917499cdd29cc3"
+          }
+        },
+        {
           "client_id": "697309619297-5pmv7kj4v2i9fv88kreothqvbcidhi5s.apps.googleusercontent.com",
           "client_type": 3
         }

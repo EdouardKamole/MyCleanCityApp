@@ -4,24 +4,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
-import 'package:my_clean_city_app/forgotpassword_page.dart';
-import 'package:my_clean_city_app/pages/home_page.dart';
-import 'package:my_clean_city_app/register.dart';
-import 'package:google_sign_in/google_sign_in.dart'; // Import Google Sign-In
+import 'package:my_clean_city_app/screens/login_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class LoginPage extends StatefulWidget {
+class RegesterPage extends StatefulWidget {
   final Function()? onTap;
 
-  const LoginPage({super.key, this.onTap});
+  const RegesterPage({super.key, required this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegesterPage> createState() => _RegesterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  // Text editing controllers
+class _RegesterPageState extends State<RegesterPage> {
+  // Text controllers for form fields
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final nameController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -29,13 +30,26 @@ class _LoginPageState extends State<LoginPage> {
   // Google Sign-In instance
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Sign user in method
-  void signUserIn() async {
+  // Firestore instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Sign up user method
+  void signUserUp() async {
     // Validate inputs
     if (emailController.text.trim().isEmpty ||
-        passwordController.text.trim().isEmpty) {
+        passwordController.text.trim().isEmpty ||
+        confirmPasswordController.text.trim().isEmpty ||
+        nameController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = "Please enter both email and password";
+        _errorMessage = "Please fill in all fields";
+      });
+      return;
+    }
+
+    // Validate password match
+    if (passwordController.text != confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = "Passwords don't match";
       });
       return;
     }
@@ -46,16 +60,28 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      // Create user with Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+
+      // Update display name in Firebase Auth
+      await userCredential.user?.updateDisplayName(nameController.text.trim());
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'displayName': nameController.text.trim(),
+        'email': emailController.text.trim(),
+        'uid': userCredential.user!.uid,
+      }, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Login successful',
-            style: GoogleFonts.poppins(fontSize: 13.sp),
+            'Registration successful',
+            style: GoogleFonts.poppins(fontSize: 15.sp),
           ),
           backgroundColor: Color(0xFF4CAF50),
         ),
@@ -63,30 +89,24 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => LoginPage()),
       );
     } on FirebaseAuthException catch (e) {
-      // Handle specific Firebase Auth exceptions
+      // Handle Firebase Auth exceptions
       switch (e.code) {
-        case 'user-not-found':
-          _errorMessage = 'No user found with this email.';
+        case 'email-already-in-use':
+          _errorMessage = 'This email is already registered.';
           break;
-        case 'wrong-password':
-          _errorMessage = 'Wrong password provided.';
+        case 'weak-password':
+          _errorMessage = 'Password is too weak.';
           break;
         case 'invalid-email':
           _errorMessage = 'The email address is not valid.';
           break;
-        case 'user-disabled':
-          _errorMessage = 'This user account has been disabled.';
-          break;
         default:
-          _errorMessage =
-              e.message ?? 'Authentication failed. Please try again.';
+          _errorMessage = e.message ?? 'Registration failed. Please try again.';
       }
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() {});
     } catch (e) {
       setState(() {
         _errorMessage = 'An error occurred. Please try again.';
@@ -119,16 +139,47 @@ class _LoginPageState extends State<LoginPage> {
           idToken: googleAuth.idToken,
         );
 
-        await FirebaseAuth.instance.signInWithCredential(credential);
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithCredential(credential);
+
+        // Get display name (prefer Google-provided name, fallback to nameController)
+        String displayName =
+            userCredential.user?.displayName ??
+            (nameController.text.trim().isNotEmpty
+                ? nameController.text.trim()
+                : googleUser.displayName ?? 'User');
+
+        // Update display name in Firebase Auth if needed
+        if (userCredential.user?.displayName == null ||
+            userCredential.user?.displayName != displayName) {
+          await userCredential.user?.updateDisplayName(displayName);
+        }
+
+        // Save user data to Firestore
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'displayName': displayName,
+          'email': userCredential.user!.email,
+          'uid': userCredential.user!.uid,
+        }, SetOptions(merge: true));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Google Sign-In successful',
+              style: GoogleFonts.poppins(fontSize: 15.sp),
+            ),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => LoginPage()),
         );
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to sign in with Google. Please try again.';
+        _errorMessage = 'Failed to sign up with Google. Please try again.';
       });
       print("Google Sign-In error: $e");
     } finally {
@@ -140,35 +191,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Toggle between login and register
-  void togglePages() {
-    if (widget.onTap != null) {
-      widget.onTap!();
-    } else {
-      // Navigate to register page if direct navigation is needed
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => RegesterPage(onTap: () => Navigator.pop(context)),
-        ),
-      );
-    }
-  }
-
-  // Navigate to forgot password page
-  void goToForgotPasswordPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-    );
-  }
-
   @override
   void dispose() {
-    // Clean up controllers when the widget is disposed
+    // Clean up controllers
     emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
@@ -182,24 +211,24 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 50.h),
+                SizedBox(height: 30.h),
 
                 // Logo
                 Container(
-                  height: 100,
-                  width: 100,
+                  height: 100.h,
+                  width: 100.w,
                   decoration: BoxDecoration(
                     color: Color(0xFFE8F5E9),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.recycling,
-                    size: 60.sp,
+                    size: 60,
                     color: Color(0xFF4CAF50),
                   ),
                 ),
 
-                SizedBox(height: 25.h),
+                SizedBox(height: 10.h),
 
                 // App name
                 Text(
@@ -213,16 +242,13 @@ class _LoginPageState extends State<LoginPage> {
 
                 SizedBox(height: 10.h),
 
-                // Welcome back message
+                // Welcome message
                 Text(
-                  'Welcome back, help keep our city clean!',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[700],
-                    fontSize: 16.sp,
-                  ),
+                  'Join us and help keep our city clean!',
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16.sp),
                 ),
 
-                SizedBox(height: 25.h),
+                SizedBox(height: 20.h),
 
                 // Error message if any
                 if (_errorMessage != null)
@@ -236,15 +262,25 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: GoogleFonts.poppins(color: Colors.red[900]),
+                        style: TextStyle(color: Colors.red[900]),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   ),
 
-                if (_errorMessage != null) SizedBox(height: 20.sp),
+                if (_errorMessage != null) SizedBox(height: 15.h),
 
-                // Email textfield
+                // Name field
+                MyTextField(
+                  controller: nameController,
+                  hintText: 'Full Name',
+                  obscureText: false,
+                  prefixIcon: Icons.person,
+                ),
+
+                SizedBox(height: 10.h),
+
+                // Email field
                 MyTextField(
                   controller: emailController,
                   hintText: 'Email',
@@ -261,31 +297,20 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   prefixIcon: Icons.lock,
                 ),
-                SizedBox(height: 4.h),
-                // Forgot password?
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: goToForgotPasswordPage,
-                        child: Text(
-                          'Forgot Password?',
-                          style: GoogleFonts.poppins(
-                            color: Color(0xFF4CAF50),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+                SizedBox(height: 10.h),
+
+                // Confirm password field
+                MyTextField(
+                  controller: confirmPasswordController,
+                  hintText: 'Confirm Password',
+                  obscureText: true,
+                  prefixIcon: Icons.lock_outline,
                 ),
 
-                SizedBox(height: 15.h),
+                SizedBox(height: 25.h),
 
-                // Sign In
+                // Sign Up button
                 _isLoading
                     ? CircularProgressIndicator(color: Color(0xFF4CAF50))
                     : Container(
@@ -293,26 +318,27 @@ class _LoginPageState extends State<LoginPage> {
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: signUserIn,
+                          onPressed: signUserUp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF4CAF50),
                             padding: EdgeInsets.symmetric(
                               horizontal: 13,
-                              vertical: 13,
+                              vertical: 14,
                             ),
                           ),
                           child: Text(
-                            'Login',
+                            'Sign up',
                             style: GoogleFonts.poppins(
                               fontSize: 13.5.sp,
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
                     ),
 
-                SizedBox(height: 25.h),
+                SizedBox(height: 20.h),
 
                 // Or continue with
                 Padding(
@@ -328,7 +354,7 @@ class _LoginPageState extends State<LoginPage> {
                           'Or continue with',
                           style: GoogleFonts.poppins(
                             color: Colors.grey[700],
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ),
@@ -339,24 +365,22 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                SizedBox(height: 25.h),
+                SizedBox(height: 20.h),
 
-                // Google + Apple sign in buttons
+                // Google Sign-In button
                 GestureDetector(
                   onTap: _signInWithGoogle,
                   child: SquareTile(imagePath: 'lib/images/google logo.png'),
                 ),
-                SizedBox(width: 25.h),
 
-                // Apple button
-                SizedBox(height: 20),
+                SizedBox(height: 15.h),
 
-                // Not a member? Register now
+                // Already a member? Login now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Not a member?',
+                      'Already have an account?',
                       style: GoogleFonts.poppins(
                         color: Colors.grey[700],
                         fontSize: 12.sp,
@@ -364,9 +388,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(width: 4.w),
                     GestureDetector(
-                      onTap: togglePages,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
                       child: Text(
-                        'Register now',
+                        'Login now',
                         style: GoogleFonts.poppins(
                           color: Color(0xFF4CAF50),
                           fontWeight: FontWeight.bold,

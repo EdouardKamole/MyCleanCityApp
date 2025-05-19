@@ -406,7 +406,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         centerTitle: true,
         title: Text(
           "Request pickup",
-          style: GoogleFonts.poppins(fontSize: 15.sp),
+          style: GoogleFonts.poppins(fontSize: 15.sp, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
