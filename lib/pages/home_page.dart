@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:my_clean_city_app/pages/history_page.dart';
 import 'package:my_clean_city_app/pages/profile_page.dart';
 import 'package:my_clean_city_app/pages/request_pickup_screen.dart';
 
@@ -104,91 +105,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget _buildDrawer() {
-  //   return Drawer(
-  //     child: ListView(
-  //       padding: EdgeInsets.zero,
-  //       children: <Widget>[
-  //         DrawerHeader(
-  //           decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               const CircleAvatar(
-  //                 radius: 32,
-  //                 backgroundColor: Colors.white70,
-  //                 child: Icon(Icons.person, size: 40, color: Color(0xFF4CAF50)),
-  //               ),
-  //               SizedBox(height: 10.h),
-  //               Text(
-  //                 'Welcome, ${username ?? "User"}',
-  //                 style: GoogleFonts.poppins(
-  //                   color: Colors.white,
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //               Text(
-  //                 _auth.currentUser?.email ?? '',
-  //                 style: GoogleFonts.poppins(
-  //                   color: Colors.white70,
-  //                   fontSize: 14.sp,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.map),
-  //           title: const Text('Waste Map'),
-  //           onTap: () {
-  //             // Navigate to waste map
-  //             Navigator.pop(context);
-  //           },
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.history),
-  //           title: const Text('Report History'),
-  //           onTap: () {
-  //             // Navigate to report history
-  //             Navigator.pop(context);
-  //           },
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.settings),
-  //           title: const Text('Settings'),
-  //           onTap: () {
-  //             // Navigate to settings screen
-  //             Navigator.pop(context);
-  //           },
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.help_outline),
-  //           title: const Text('Help & Support'),
-  //           onTap: () {
-  //             // Navigate to help screen
-  //             Navigator.pop(context);
-  //           },
-  //         ),
-  //         const Divider(),
-  //         ListTile(
-  //           leading: const Icon(Icons.logout),
-  //           title: const Text('Logout'),
-  //           onTap: () {
-  //             _auth.signOut();
-  //             Navigator.pop(context);
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildBody() {
     if (_selectedIndex == 0) {
       return _buildHomeContent();
     } else {
-      return _buildHistoryContent();
+      return HistoryPage();
     }
   }
 
@@ -430,26 +351,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildProfileContent() {
-    // Placeholder for Profile tab
-    return const Center(
-      child: Text(
-        'Profile section coming soon',
-        style: TextStyle(fontSize: 18),
-      ),
-    );
-  }
-
-  Widget _buildHistoryContent() {
-    // Placeholder for History tab
-    return const Center(
-      child: Text(
-        'History section coming soon',
-        style: TextStyle(fontSize: 18),
       ),
     );
   }
