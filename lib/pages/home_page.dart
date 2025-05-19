@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -19,18 +20,30 @@ class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? username;
 
+  String? photoUrl;
+
   @override
   void initState() {
     super.initState();
-    _getUserName();
+    _getUserData();
   }
 
-  void _getUserName() {
+  void _getUserData() {
     final user = _auth.currentUser;
     if (user != null) {
-      // Extract name from email or use displayName if available
       setState(() {
         username = user.displayName ?? user.email?.split('@')[0] ?? 'User';
+        photoUrl = user.photoURL;
+      });
+      FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((
+        doc,
+      ) {
+        if (doc.exists) {
+          setState(() {
+            photoUrl = doc.data()?['photoUrl'] ?? photoUrl;
+            username = doc.data()?['displayName'] ?? username;
+          });
+        }
       });
     }
   }
@@ -62,10 +75,29 @@ class _HomePageState extends State<HomePage> {
             );
           },
           icon: CircleAvatar(
-            radius: 24,
-            backgroundImage: NetworkImage(
-              "https://avatar.iran.liara.run/public/21",
-            ),
+            radius: 50,
+            backgroundColor: Colors.grey[200],
+            child:
+                photoUrl != null
+                    ? ClipOval(
+                      child: Image.network(
+                        photoUrl!,
+                        width: 200.w,
+                        height: 200.h,
+                        fit: BoxFit.cover,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Color(0xFF4CAF50),
+                            ),
+                      ),
+                    )
+                    : const Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Color(0xFF4CAF50),
+                    ),
           ),
         ),
         backgroundColor: const Color(0xFF4CAF50),
