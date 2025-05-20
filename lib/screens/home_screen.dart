@@ -39,15 +39,15 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 35),
+            icon: Icon(Icons.home, size: 28),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history, size: 35),
+            icon: Icon(Icons.history, size: 28),
             label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.recycling, size: 35),
+            icon: Icon(Icons.recycling, size: 28),
             label: 'Request',
           ),
         ],
@@ -55,11 +55,11 @@ class _HomePageState extends State<HomePage> {
         selectedItemColor: Color(0xFF4CAF50),
         unselectedItemColor: Colors.grey[600],
         selectedLabelStyle: GoogleFonts.poppins(
-          fontSize: 14.sp,
+          fontSize: 12.sp,
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: GoogleFonts.poppins(
-          fontSize: 14.sp,
+          fontSize: 12.sp,
           fontWeight: FontWeight.w600,
         ),
         backgroundColor: Colors.white,
@@ -122,8 +122,8 @@ class _HomeContentState extends State<HomeContent>
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         leading: IconButton(
-          iconSize: 40.sp,
-          padding: EdgeInsets.all(4.w),
+          iconSize: 30.sp,
+          padding: EdgeInsets.all(6.w),
           onPressed: () {
             Navigator.push(
               context,
@@ -131,7 +131,7 @@ class _HomeContentState extends State<HomeContent>
             );
           },
           icon: CircleAvatar(
-            radius: 80.r,
+            radius: 70.r,
             backgroundColor: Colors.grey[200],
             child:
                 photoUrl != null
@@ -229,9 +229,9 @@ class _HomeContentState extends State<HomeContent>
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      'Help keep our city clean! Use the Request tab to schedule a pickup.',
+                      'Help make our city cleaner by reporting waste locations.',
                       style: GoogleFonts.poppins(
-                        fontSize: 15.sp,
+                        fontSize: 13.sp,
                         color: Colors.grey[700],
                         height: 1.5,
                       ),
@@ -240,30 +240,54 @@ class _HomeContentState extends State<HomeContent>
                 ),
               ),
               SizedBox(height: 30.h),
-              // Logo and Request Pickup Button Section
+
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20.w),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.white, Colors.grey[50]!],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.15),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.eco, size: 100.sp, color: Color(0xFF4CAF50)),
-                    SizedBox(height: 16.h),
+                    // Green Circle with Plus Icon
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF4CAF50),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.fire_truck,
+                        size: 40,
+                        color: Color(0xFF4CAF50),
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+
+                    Text(
+                      'Schedule a pickup for your trash easily',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
@@ -274,28 +298,26 @@ class _HomeContentState extends State<HomeContent>
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4CAF50),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32.w,
-                          vertical: 12.h,
-                        ),
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        backgroundColor: const Color(0xFF4CAF50),
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        elevation: 2,
                       ),
                       child: Text(
-                        'Request Pickup',
+                        'Request pickup',
                         style: GoogleFonts.poppins(
+                          color: Colors.white,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+
               SizedBox(height: 30.h),
               // Recent Activity Section
               Text(
@@ -460,7 +482,7 @@ class _HomeContentState extends State<HomeContent>
                   title,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                     color: Colors.black87,
                   ),
                 ),
@@ -469,7 +491,7 @@ class _HomeContentState extends State<HomeContent>
                   time,
                   style: GoogleFonts.poppins(
                     color: Colors.grey[600],
-                    fontSize: 13.sp,
+                    fontSize: 12.sp,
                   ),
                 ),
               ],

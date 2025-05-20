@@ -422,12 +422,20 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 12.h),
-              Card(
-                elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey.shade400, width: 1),
-                  borderRadius: BorderRadius.circular(5),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -462,13 +470,13 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                               return InkWell(
                                 onTap: _pickImage,
                                 child: Container(
-                                  width: 80.w,
+                                  width: 90.w,
                                   margin: EdgeInsets.only(right: 5.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(5.r),
                                     color: Colors.grey.shade50,
                                     border: Border.all(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.grey.shade200,
                                     ),
                                   ),
                                   child: Icon(
@@ -525,12 +533,20 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
               SizedBox(height: 10.h),
               SizedBox(
                 width: double.infinity,
-                child: Card(
-                  elevation: 0,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.grey.shade400, width: 1),
-                    borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -555,7 +571,16 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                               Icons.location_pin,
                               color: Colors.green,
                             ),
-                            border: InputBorder.none,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.r),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.r),
+                              borderSide: BorderSide(color: Colors.green),
+                            ),
                           ),
                           style: GoogleFonts.poppins(fontSize: 14.sp),
                         ),
@@ -563,8 +588,10 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                         if (_currentAddress != null)
                           Text(
                             "Current device location: $_currentAddress",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
+                              fontSize: 13.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -585,12 +612,20 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                 ),
               ),
               SizedBox(height: 14.h),
-              Card(
-                elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey.shade400, width: 1),
-                  borderRadius: BorderRadius.circular(5),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -608,7 +643,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
                           ),
                           Text(
                             "(Optional)",
-                            style: GoogleFonts.poppins(fontSize: 13.5.sp),
+                            style: GoogleFonts.poppins(fontSize: 12.5.sp),
                           ),
                         ],
                       ),
