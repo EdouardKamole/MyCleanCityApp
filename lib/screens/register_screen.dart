@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/components/my_textField.dart';
 import 'package:my_clean_city_app/components/square_tile.dart';
+import 'package:my_clean_city_app/screens/home_screen.dart';
 import 'package:my_clean_city_app/screens/login_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -165,7 +166,7 @@ class _RegesterPageState extends State<RegesterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Google Sign-In successful',
+              'Welcome',
               style: GoogleFonts.poppins(fontSize: 15.sp),
             ),
             backgroundColor: Color(0xFF4CAF50),
@@ -174,7 +175,7 @@ class _RegesterPageState extends State<RegesterPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       }
     } catch (e) {
