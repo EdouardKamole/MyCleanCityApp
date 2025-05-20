@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/firebase_options.dart';
-import 'package:my_clean_city_app/screens/initial_screen.dart';
+import 'package:my_clean_city_app/screens/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +34,6 @@ class MyCleanCityApp extends StatelessWidget {
             ),
             primaryColor: Color(0xFF4CAF50),
             scaffoldBackgroundColor: Colors.grey[100],
-
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF4CAF50),
@@ -44,7 +43,7 @@ class MyCleanCityApp extends StatelessWidget {
               ),
             ),
           ),
-          home: InitialScreen(),
+          home: AuthWrapper(),
         );
       },
     );

@@ -305,7 +305,7 @@ class _ProfilePageState extends State<ProfilePage>
                     Text(
                       username ?? 'User',
                       style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                         shadows: [
@@ -317,7 +317,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ],
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 1.h),
                     Text(
                       _auth.currentUser?.email ?? '',
                       style: GoogleFonts.poppins(
@@ -337,15 +337,15 @@ class _ProfilePageState extends State<ProfilePage>
                       label: Text(
                         'Edit Profile',
                         style: GoogleFonts.poppins(
-                          fontSize: 14.sp,
+                          fontSize: 13.sp,
                           color: Color(0xFF4CAF50),
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Color(0xFF4CAF50), width: 2),
                         padding: EdgeInsets.symmetric(
-                          horizontal: 24.w,
-                          vertical: 12.h,
+                          horizontal: 18.w,
+                          vertical: 8.h,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.r),
@@ -514,7 +514,7 @@ class _ProfilePageState extends State<ProfilePage>
                     Text(
                       'Settings',
                       style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                         shadows: [
@@ -581,7 +581,7 @@ class _ProfilePageState extends State<ProfilePage>
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.all(10.w), // Reduced from 14.w
+          padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF4CAF50).withOpacity(0.1), Colors.grey[100]!],
@@ -595,17 +595,13 @@ class _ProfilePageState extends State<ProfilePage>
               ),
             ],
           ),
-          child: Icon(
-            icon,
-            color: Color(0xFF4CAF50),
-            size: 24.sp,
-          ), // Reduced from 28.sp
+          child: Icon(icon, color: Color(0xFF4CAF50), size: 24.sp),
         ),
-        SizedBox(height: 8.h), // Reduced from 10.h
+        SizedBox(height: 8.h),
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 16.sp, // Reduced from 20.sp
+            fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -628,19 +624,22 @@ class _ProfilePageState extends State<ProfilePage>
     Color textColor = Colors.black87,
     Color iconColor = Colors.black54,
   }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: iconColor, size: 24.sp),
-      title: Text(
-        title,
-        style: GoogleFonts.poppins(fontSize: 14.sp, color: textColor),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 14),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(icon, color: iconColor, size: 22.sp),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(fontSize: 14.sp, color: textColor),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 18.sp,
+          color: Colors.grey[600],
+        ),
+        onTap: onTap,
       ),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 18.sp,
-        color: Colors.grey[600],
-      ),
-      onTap: onTap,
     );
   }
 
