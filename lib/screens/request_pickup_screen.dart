@@ -12,7 +12,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RequestPickupScreen extends StatefulWidget {
-  const RequestPickupScreen({Key? key}) : super(key: key);
+  final bool showAppBar;
+  const RequestPickupScreen({Key? key, this.showAppBar = false})
+    : super(key: key);
 
   @override
   State<RequestPickupScreen> createState() => _RequestPickupScreenState();
@@ -406,7 +408,11 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         centerTitle: true,
         title: Text(
           "Request pickup",
-          style: GoogleFonts.poppins(fontSize: 15.sp, color: Colors.white),
+          style: GoogleFonts.poppins(
+            fontSize: 15.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: SingleChildScrollView(

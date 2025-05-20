@@ -3,6 +3,7 @@ import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:my_clean_city_app/firebase_options.dart';
 import 'package:my_clean_city_app/screens/initial_screen.dart';
 
@@ -27,9 +28,13 @@ class MyCleanCityApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'MyCleanCity',
           theme: ThemeData(
+            textTheme: TextTheme(
+              bodyLarge: GoogleFonts.poppins(fontSize: 15.sp),
+              bodyMedium: GoogleFonts.poppins(fontSize: 13.5.sp),
+            ),
             primaryColor: Color(0xFF4CAF50),
             scaffoldBackgroundColor: Colors.grey[100],
-            textTheme: TextTheme(bodyMedium: TextStyle(fontFamily: 'Poppins')),
+
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF4CAF50),

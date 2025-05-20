@@ -30,6 +30,20 @@ class HistoryPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: Text(
+          "History",
+          style: GoogleFonts.poppins(
+            fontSize: 16.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Color(0xFF4CAF50),
+
+        elevation: 2,
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20.w),
