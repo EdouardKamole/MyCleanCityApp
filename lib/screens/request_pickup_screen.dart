@@ -356,7 +356,7 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         'pickup_requests',
       );
 
-      await pickupRequests.add({
+      DocumentReference docRef = await pickupRequests.add({
         'latitude': _currentPosition?.latitude,
         'longitude': _currentPosition?.longitude,
         'address': _locationController.text,
@@ -366,6 +366,8 @@ class _RequestPickupScreenState extends State<RequestPickupScreen> {
         'status': "pending",
         'email': _auth.currentUser!.email ?? '',
       });
+
+      await docRef.update({'id': docRef.id});
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
